@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur p-8 rounded-xl shadow md:shadow-lg border border-slate-200 dark:border-slate-700">
+  <div class="mb-6 text-center">
+    <h1 class="text-2xl font-semibold tracking-tight">Welcome Back</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Access your MoneyFlow dashboard</p>
+  </div>
+  <form method="post" novalidate>{% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="mb-4 text-sm text-red-600">{{ form.non_field_errors|join:' ' }}</div>
+    {% endif %}
+    <div class="space-y-5">
+      {% for field in form %}
+        <div>
+          <label class="block mb-1 font-medium text-sm" for="id_{{ field.name }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="mt-1 text-xs text-red-600">{{ field.errors|join:', ' }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="flex items-center justify-between text-sm">
+        <label class="inline-flex items-center gap-2 select-none cursor-pointer">
+          <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/40" />
+          <span>Remember me</span>
+        </label>
+        <a href="/accounts/password_reset/" class="text-blue-600 hover:underline">Forgot password?</a>
+      </div>
+    </div>
+    <button class="mt-8 w-full bg-blue-600 text-white py-2.5 rounded-md font-medium tracking-wide hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors">Login</button>
+  </form>
+  <p class="mt-6 text-sm text-center">Need an account? <a class="text-blue-600 hover:underline" href="/accounts/register/">Register</a></p>
+  <div class="mt-6 text-center">
+    <button type="button" id="toggle-password" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 underline">Show password</button>
+  </div>
+</div>
+<script>
+  (function(){
+    const btn = document.getElementById('toggle-password');
+    if(!btn) return;
+    btn.addEventListener('click', () => {
+      const pwd = document.getElementById('id_password');
+      if(!pwd) return;
+      const show = pwd.getAttribute('type') === 'password';
+      pwd.setAttribute('type', show ? 'text' : 'password');
+      btn.textContent = show ? 'Hide password' : 'Show password';
+    });
+  })();
+</script>
+{% endblock %}

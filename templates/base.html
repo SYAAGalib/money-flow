@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full {% if theme == 'dark' %}dark{% endif %}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneyFlow - {% block title %}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { primary: '#2563eb'} } } }
+  </script>
+  <style>
+    body{font-family:'Inter',sans-serif;}
+    .dark body{background:#0f172a;color:#fff;}
+    .form-control{width:100%;padding:.625rem .75rem;border:1px solid #cbd5e1;border-radius:.5rem;background:#ffffff;color:#0f172a;transition:.15s;}
+    .dark .form-control{background:#1e293b;border-color:#334155;color:#f1f5f9;}
+    .form-control:focus{outline:2px solid #2563eb33;outline-offset:2px;}
+    .badge{display:inline-block;padding:0 .5rem;font-size:.75rem;line-height:1.25rem;font-weight:600;border-radius:9999px}
+    .badge-income{background:#dcfce7;color:#166534}
+    .badge-expense{background:#fee2e2;color:#991b1b}
+    .dark .badge-income{background:#14532d;color:#bbf7d0}
+    .dark .badge-expense{background:#7f1d1d;color:#fecaca}
+    .table-zebra tbody tr:nth-child(even){background:#f8fafc}
+    .dark .table-zebra tbody tr:nth-child(even){background:#1e293b}
+    .nav-link{position:relative;padding:.25rem .5rem;border-radius:.375rem}
+    .nav-link:hover{color:#2563eb;background:#2563eb10}
+    .active-nav{color:#2563eb;font-weight:600;}
+    @media (max-width: 800px){
+      #mobile-nav-toggle{display:block}
+      #nav-links{display:none;}
+      #nav-links.open{display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem}
+    }
+    @media (min-width: 801px){#mobile-nav-toggle{display:none}}
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-full bg-slate-50 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
+  <nav class="bg-white dark:bg-slate-800 shadow mb-6">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="/" class="text-xl font-bold text-primary flex items-center gap-2">
+            <img src="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f4b0.png" alt="logo" class="w-7 h-7"> <span>MoneyFlow</span>
+          </a>
+          <button id="mobile-nav-toggle" class="p-2 rounded border dark:border-slate-600" aria-label="Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="theme-toggle" class="px-3 py-2 text-sm rounded border dark:border-slate-600" type="button">Toggle Theme</button>
+          {% if user.is_authenticated %}
+          <form action="/accounts/logout/" method="post" class="inline">{% csrf_token %}<button class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</button></form>
+          {% else %}
+          <a href="/accounts/login/" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600">Login</a>
+          {% endif %}
+        </div>
+      </div>
+      {% if user.is_authenticated %}
+      <div id="nav-links" class="mt-4 flex gap-4 flex-wrap">
+  {% with p=request.path %}
+  <a href="/" class="nav-link {% if p == '/' %}active-nav{% endif %}">Dashboard</a>
+  <a href="/transactions/" class="nav-link {% if '/transactions/' in p and not p == '/transactions/add/' %}active-nav{% endif %}">Transactions</a>
+  <a href="/transactions/add/" class="nav-link {% if p == '/transactions/add/' %}active-nav{% endif %}">Add Transaction</a>
+  <a href="/profile/" class="nav-link {% if '/profile' in p %}active-nav{% endif %}">Profile</a>
+  <a href="/about/" class="nav-link {% if '/about' in p %}active-nav{% endif %}">About</a>
+  {% endwith %}
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 pb-12">
+    {% for message in messages %}
+      <div class="mb-4 p-3 rounded bg-blue-100 text-blue-800">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="py-6 text-center text-sm text-slate-500 dark:text-slate-400 border-t dark:border-slate-700">&copy; {{ now|date:'Y' }} MoneyFlow</footer>
+  <script>
+    // Mobile nav toggle
+    const navToggle=document.getElementById('mobile-nav-toggle');
+    if(navToggle){navToggle.addEventListener('click',()=>{document.getElementById('nav-links').classList.toggle('open');});}
+    // Theme toggle (client side + session sync via fetch optional)
+    const themeBtn=document.getElementById('theme-toggle');
+    function applyTheme(th){document.documentElement.classList.toggle('dark', th==='dark');localStorage.setItem('mf_theme', th);} 
+    const stored=localStorage.getItem('mf_theme');
+    if(stored){applyTheme(stored);} else if(document.documentElement.classList.contains('dark')) {localStorage.setItem('mf_theme','dark');}
+    if(themeBtn){themeBtn.addEventListener('click',()=>{const cur=document.documentElement.classList.contains('dark')?'dark':'light';const nxt=cur==='dark'?'light':'dark';applyTheme(nxt);});}
+  </script>
+</body>
+</html>
